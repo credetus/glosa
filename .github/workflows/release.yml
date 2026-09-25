@@ -15,9 +15,23 @@ jobs:
     name: Build distributions
     needs: ci
     runs-on: ubuntu-latest
+    outputs:
+      final: ${{ steps.channel.outputs.final }}
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v7
+
+      # vX.Y.Z -> PyPI + GitHub Release; any other tag (e.g. v0.1.0rc1) -> TestPyPI
+      - name: Determine release channel
+        id: channel
+        run: |
+          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "final=true" >> "$GITHUB_OUTPUT"
+            echo "Final release: publishing to PyPI"
+          else
+            echo "final=false" >> "$GITHUB_OUTPUT"
+            echo "Pre-release: publishing to TestPyPI"
+          fi
 
       - name: Verify tag matches project version
         run: |
@@ -39,9 +53,28 @@ jobs:
           name: dist
           path: dist/
 
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    if: needs.build.outputs.final != 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/glosa/
+    permissions:
+      id-token: write # TestPyPI trusted publishing (OIDC), no API token needed
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v7
+      - run: uv publish --trusted-publishing always --publish-url https://test.pypi.org/legacy/
+
   publish-pypi:
     name: Publish to PyPI
     needs: build
+    if: needs.build.outputs.final == 'true'
     runs-on: ubuntu-latest
     environment:
       name: pypi
