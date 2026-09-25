@@ -1,6 +1,6 @@
 [project]
 name = "glosa"
-version = "0.1.0rc1"
+version = "0.1.0"
 description = "Glosa."
 readme = "README.md"
 license = "MIT"
