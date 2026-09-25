@@ -48,7 +48,7 @@ jobs:
       - name: Smoke test sdist
         run: uv run --isolated --no-project --with dist/*.tar.gz python -c "from glosa import BaseStorageManager, Glosa"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
