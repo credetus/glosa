@@ -18,7 +18,7 @@ jobs:
     outputs:
       final: ${{ steps.channel.outputs.final }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
 
       # vX.Y.Z -> PyPI + GitHub Release; any other tag (e.g. v0.1.0rc1) -> TestPyPI
